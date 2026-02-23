@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>POC Gemini Seguro</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 12px; }
+    textarea { width: 100%; min-height: 120px; font-size: 16px; padding: 10px; }
+    button { font-size: 16px; padding: 10px 12px; margin: 8px 6px 8px 0; }
+    #out { white-space: pre-wrap; border: 1px solid #ddd; padding: 12px; border-radius: 10px; min-height: 120px; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .pill { padding:6px 10px; border:1px solid #ddd; border-radius:999px; }
+  </style>
+</head>
+<body>
+
+  <h1>🧠 POC Gemini (Seguro) — Texto + Voz</h1>
+  <div class="row">
+    <span class="pill">🔒 API Key no servidor (Vercel)</span>
+    <span class="pill">🔒 Prompt no servidor (Vercel)</span>
+    <span class="pill">🎙️ pt-BR / pt-PT</span>
+  </div>
+
+  <h3>📝 Pergunta</h3>
+  <textarea id="q" placeholder="Digite aqui... (ou use voz)"></textarea>
+
+  <div class="row">
+    <button onclick="send()">🚀 Enviar</button>
+    <button onclick="startVoice('pt-BR')">🎙️ pt-BR</button>
+    <button onclick="startVoice('pt-PT')">🎙️ pt-PT</button>
+    <button onclick="stopVoice()">⛔ Parar</button>
+  </div>
+
+  <h3>📩 Resposta</h3>
+  <div id="out"></div>
+
+<script>
+let rec = null;
+
+async function send(){
+  const text = document.getElementById('q').value.trim();
+  document.getElementById('out').textContent = "⏳ Pensando...";
+
+  const r = await fetch('/api/chat', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ text })
+  });
+
+  const d = await r.json();
+  document.getElementById('out').textContent = d.answer || JSON.stringify(d, null, 2);
+}
+
+function startVoice(lang){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){
+    alert("Voz não suportada neste navegador. Use Chrome/Edge.");
+    return;
+  }
+  rec = new SR();
+  rec.lang = lang;
+  rec.interimResults = true;
+  rec.continuous = false;
+
+  rec.onresult = (event) => {
+    let interim = "";
+    let finalText = "";
+    for(let i = event.resultIndex; i < event.results.length; i++){
+      const chunk = event.results[i][0]?.transcript || "";
+      if(event.results[i].isFinal) finalText += chunk;
+      else interim += chunk;
+    }
+    const box = document.getElementById('q');
+    if(interim) box.value = (box.value + " " + interim).trim();
+    if(finalText) box.value = (box.value + " " + finalText).trim();
+  };
+
+  rec.start();
+}
+
+function stopVoice(){
+  try{ if(rec) rec.stop(); } catch(e){}
+}
+</script>
+
+</body>
+</html>
