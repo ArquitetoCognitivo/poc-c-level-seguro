@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   const systemPrompt = process.env.SYSTEM_PROMPT || "";
   const model =
     (process.env.GEMINI_MODEL && process.env.GEMINI_MODEL.trim()) ||
-    "gemini-2.0-flash";
+    "gemini-3-flash-preview";
 
   if (!apiKey) {
     return res.status(500).json({ error: "missing_GEMINI_API_KEY" });
