@@ -1,39 +1,41 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    res.status(405).json({ error: "method_not_allowed" });
-    return;
+    return res.status(405).json({ error: "method_not_allowed" });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
   const systemPrompt = process.env.SYSTEM_PROMPT || "";
+  const model =
+    (process.env.GEMINI_MODEL && process.env.GEMINI_MODEL.trim()) ||
+    "gemini-2.0-flash";
 
   if (!apiKey) {
-    res.status(500).json({ error: "missing_GEMINI_API_KEY" });
-    return;
+    return res.status(500).json({ error: "missing_GEMINI_API_KEY" });
   }
 
-  const body = req.body || {};
-  const userText = (body.text || "").toString().trim();
+  const userText = (req.body?.text || "").toString().trim();
   if (!userText) {
-    res.status(400).json({ error: "missing_text" });
-    return;
+    return res.status(400).json({ error: "missing_text" });
   }
 
-  // Prompt + pergunta (tudo no servidor, não vai pro navegador)
-  const composed = systemPrompt ? `${systemPrompt}\n\nUSER:\n${userText}` : userText;
+  const composed = systemPrompt
+    ? `${systemPrompt}\n\nUSER:\n${userText}`
+    : userText;
 
   try {
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: composed }] }],
-          generationConfig: { temperature: 0.3, maxOutputTokens: 1024 }
-        })
-      }
-    );
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
+
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: composed }] }],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 1024
+        }
+      })
+    });
 
     const data = await resp.json();
 
@@ -41,6 +43,16 @@ export default async function handler(req, res) {
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       data?.error?.message ||
       "Erro sem detalhe";
+
+    return res.status(200).json({ answer });
+
+  } catch (error) {
+    return res.status(500).json({
+      error: "request_failed",
+      detail: String(error)
+    });
+  }
+}
 
     res.status(200).json({ answer });
   } catch (e) {
