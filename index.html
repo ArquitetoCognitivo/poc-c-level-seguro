@@ -60,7 +60,7 @@ function startVoice(lang){
   }
   rec = new SR();
   rec.lang = lang;
-  rec.interimResults = true;
+  rec.interimResults = false;
   rec.continuous = false;
 
   rec.onresult = (event) => {
