@@ -53,9 +53,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
-    res.status(200).json({ answer });
-  } catch (e) {
-    res.status(500).json({ error: "request_failed", detail: String(e) });
-  }
-}
