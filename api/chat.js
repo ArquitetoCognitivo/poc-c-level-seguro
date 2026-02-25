@@ -14,6 +14,23 @@ export default async function handler(req, res) {
 
   if (!userText) return res.status(400).json({ error: "missing_text" });
 
+  // ✅ Camada automática de elevação (genérica, serve para qualquer pergunta)
+  const enhancedUserText = `
+Você está operando como um Executive Strategic Advisor de alto nível.
+
+Regras de resposta:
+- Estruture sempre em blocos claros
+- Traga contexto de mercado global quando aplicável
+- Traga referência comparativa executiva quando aplicável
+- Traga implicação financeira aproximada quando fizer sentido
+- Priorize aplicabilidade prática
+- Evite retórica excessiva
+- Seja direto e denso
+
+Pergunta do usuário:
+${userText}
+`;
+
   const url =
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
@@ -27,7 +44,7 @@ export default async function handler(req, res) {
       contents: [
         {
           role: "user",
-          parts: [{ text: userText }]
+          parts: [{ text: enhancedUserText }]
         }
       ]
     })
