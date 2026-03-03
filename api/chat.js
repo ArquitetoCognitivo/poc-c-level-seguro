@@ -41,7 +41,7 @@ Pergunta do usuário:
 ${userText}
 `;
 
-const url = "https://api.groq.com/openai/v1/chat/completions";
+const url = "https://api.groq.com;
 
 const response = await fetch(url, {
   method: "POST",
