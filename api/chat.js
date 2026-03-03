@@ -7,7 +7,7 @@ BACKUP (código antigo) — cole aqui dentro o conteúdo antigo do chat.js
 2) Depois: salve o arquivo.
 3) O código ativo de teste está abaixo do comentário.
 ---------------------------------------------------------------
-
+*/
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "method_not_allowed" });
@@ -41,22 +41,22 @@ Pergunta do usuário:
 ${userText}
 `;
 
-const url = "https://api.deepseek.com/v1/chat/completions";
+const url = "https://api.groq.com/openai/v1/chat/completions";
 
 const response = await fetch(url, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "Authorization": Bearer ${apiKey}
+    "Authorization": `Bearer ${apiKey}`,
   },
   body: JSON.stringify({
-    model: "deepseek-chat",
+    model: "llama-3.1-8b-instant",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: enhancedUserText }
     ],
     temperature: 0.2
-  })
+  }),
 });
 
   const data = await response.json();
@@ -68,32 +68,6 @@ const response = await fetch(url, {
 
   return res.status(200).json({ answer });
 }
-*/
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "method_not_allowed" });
-  }
 
-  const apiKey = process.env.GEMINI_API_KEY; // (mantém a mesma nomenclatura)
-  if (!apiKey) {
-    return res.status(500).json({ error: "missing_api_key_env_GEMINI_API_KEY" });
-  }
 
-  const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: "deepseek-chat",
-      messages: [{ role: "user", content: "Responda apenas OK" }]
-    })
-  });
-
-  const data = await response.json();
-
-  // devolve TUDO para a gente ver o erro real (ou o OK)
-  return res.status(response.status).json(data);
-}
