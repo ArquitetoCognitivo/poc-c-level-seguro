@@ -1,3 +1,13 @@
+
+
+/*
+BACKUP (código antigo) — cole aqui dentro o conteúdo antigo do chat.js
+---------------------------------------------------------------
+1) Primeiro: cole o seu chat.js antigo aqui dentro (pra ficar salvo).
+2) Depois: salve o arquivo.
+3) O código ativo de teste está abaixo do comentário.
+---------------------------------------------------------------
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "method_not_allowed" });
@@ -57,4 +67,33 @@ const response = await fetch(url, {
     "sem_resposta";
 
   return res.status(200).json({ answer });
+}
+*/
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "method_not_allowed" });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY; // (mantém a mesma nomenclatura)
+  if (!apiKey) {
+    return res.status(500).json({ error: "missing_api_key_env_GEMINI_API_KEY" });
+  }
+
+  const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: "deepseek-chat",
+      messages: [{ role: "user", content: "Responda apenas OK" }]
+    })
+  });
+
+  const data = await response.json();
+
+  // devolve TUDO para a gente ver o erro real (ou o OK)
+  return res.status(response.status).json(data);
 }
