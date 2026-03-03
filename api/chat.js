@@ -31,24 +31,23 @@ Pergunta do usuário:
 ${userText}
 `;
 
-  const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+const url = "https://api.deepseek.com/v1/chat/completions";
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: systemPrompt }]
-      },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: enhancedUserText }]
-        }
-      ]
-    })
-  });
+const response = await fetch(url, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": Bearer ${apiKey}
+  },
+  body: JSON.stringify({
+    model: "deepseek-chat",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: enhancedUserText }
+    ],
+    temperature: 0.2
+  })
+});
 
   const data = await response.json();
 
